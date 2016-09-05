@@ -1,6 +1,10 @@
 package core
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/fsnotify/fsnotify"
 )
@@ -54,8 +58,13 @@ func (tick *Tick) watch(callback func()) error {
 		}
 	}()
 
+	list := findAllDir(tick.config.Path)
 	log.Infof("watching '%s'", tick.config.Path)
 	err = watcher.Add(tick.config.Path)
+	for _, path := range list {
+		log.Infof("watching '%s'", path)
+		err = watcher.Add(path)
+	}
 
 	if err != nil {
 		log.Fatal(err)
@@ -63,4 +72,16 @@ func (tick *Tick) watch(callback func()) error {
 	}
 	<-done
 	return nil
+}
+
+func findAllDir(path string) []string {
+	list := []string{}
+	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() && !strings.HasPrefix(path, ".") {
+			list = append(list, path)
+		}
+
+		return nil
+	})
+	return list
 }

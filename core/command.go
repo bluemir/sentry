@@ -31,12 +31,12 @@ func (c *shellCommander) exec(command string) {
 		for {
 			line, _, err := r.ReadLine()
 			if err != nil {
-				log.Info("[end of stdout]")
+				log.Debugln("[end of stdout]")
 				return
 			}
 			log.Info(string(line))
 		}
-		log.Info("go func end")
+		log.Debugln("go func end")
 	}()
 
 	err := cmd.Start()
