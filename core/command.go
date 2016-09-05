@@ -1,7 +1,8 @@
 package core
 
 import (
-	"bytes"
+	"bufio"
+	"io"
 	"os"
 	"os/exec"
 	"strings"
@@ -21,14 +22,27 @@ func newShellCommander(shell string) *shellCommander {
 func (c *shellCommander) exec(command string) {
 	cmd := exec.Command(c.shell, "-c", command)
 	cmd.Stdin = strings.NewReader("some input")
-	var out bytes.Buffer
-	cmd.Stdout = &out
-	err := cmd.Run()
+
+	var reader io.Reader
+	reader, cmd.Stdout = io.Pipe()
+	//cmd.Stdout = stdout
+	go func() {
+		r := bufio.NewReader(reader)
+		for {
+			line, _, err := r.ReadLine()
+			if err != nil {
+				log.Info("[end of stdout]")
+				return
+			}
+			log.Info(string(line))
+		}
+		log.Info("go func end")
+	}()
+
+	err := cmd.Start()
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Printf("%s", out.String())
-
 	c.proc = cmd.Process
 }
 func (c *shellCommander) stop() {

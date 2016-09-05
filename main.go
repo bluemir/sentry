@@ -33,7 +33,7 @@ func init() {
 	RootCmd.Flags().StringVarP(&config.Command, "command", "c", "", "command to run")
 	RootCmd.Flags().StringVarP(&config.Exclude, "exclude", "x", "", "exculde pattern regexp")
 	RootCmd.Flags().Int32VarP(&config.Delay, "delay", "d", 500, "delay that wait events")
-	RootCmd.Flags().StringVarP(&config.Path, "path", "p", ".", "path")
+	RootCmd.Flags().StringVarP(&config.Path, "path", "p", "./", "path")
 	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell")
 	RootCmd.Flags().BoolVarP(&config.KillOnRestart, "kill-on-restart", "k", true, "kill on restart")
 }

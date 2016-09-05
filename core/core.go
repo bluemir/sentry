@@ -20,17 +20,11 @@ func NewTick(config *Config) *Tick {
 }
 
 func (tick *Tick) Run() {
-	// watcher := newWatcher(pattern)
-	// err := watcher.watch(func(){tick.shell.exec(command)})
-
-	//end of program
-
 	err := tick.watch(func() {
 		if tick.config.KillOnRestart {
 			tick.shell.stop()
 		}
 		tick.shell.exec(tick.config.Command)
-
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -51,16 +45,16 @@ func (tick *Tick) watch(callback func()) error {
 			case event := <-watcher.Events:
 				log.Infof("event: %s", event)
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					log.Println("modified file:", event.Name)
+					log.Debugln("modified file:", event.Name)
 				}
 				callback()
 			case err := <-watcher.Errors:
-				log.Println("error:", err)
+				log.Debugln("error:", err)
 			}
 		}
 	}()
 
-	log.Infof("wathing '%s'", tick.config.Path)
+	log.Infof("watching '%s'", tick.config.Path)
 	err = watcher.Add(tick.config.Path)
 
 	if err != nil {
