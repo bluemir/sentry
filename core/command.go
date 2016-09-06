@@ -36,7 +36,7 @@ func (c *shellCommander) exec(command string) {
 			}
 			log.Info(string(line))
 		}
-		log.Debugln("go func end")
+		log.Debugln("process read line terminated")
 	}()
 
 	err := cmd.Start()
@@ -49,7 +49,7 @@ func (c *shellCommander) stop() {
 	if c.proc == nil {
 		return
 	}
-
+	log.Infof("kill process")
 	err := c.proc.Kill()
 	if err != nil {
 		log.Info(err)

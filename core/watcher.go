@@ -12,12 +12,16 @@ import (
 type fsWatcher struct {
 	path    string
 	watcher *fsnotify.Watcher
+	delayer *delayer
+	done    chan bool
 }
 
-func newFsWatcher(path string) *fsWatcher {
+func newFsWatcher(path string, delay int32) *fsWatcher {
 	return &fsWatcher{
 		path:    path,
 		watcher: nil,
+		delayer: newDelayer(delay),
+		done:    make(chan bool),
 	}
 }
 
@@ -25,13 +29,13 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 	for {
 		select {
 		case event := <-fswatcher.watcher.Events:
+			if event.Op == fsnotify.Chmod {
+				//macos bug?
+				continue
+			}
 			log.Infof("event: %s", event)
-			if event.Op&fsnotify.Write == fsnotify.Write {
-				log.Infof("modified file: %s", event.Name)
-			}
-			if event.Op != fsnotify.Chmod {
-				callback()
-			}
+
+			fswatcher.delayer.Do(callback)
 		case err := <-fswatcher.watcher.Errors:
 			log.Debugln("error:", err)
 		}
@@ -50,8 +54,6 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 		return err
 	}
 	defer fswatcher.watcher.Close()
-
-	done := make(chan bool)
 	go fswatcher.handleEvent(callback)
 
 	list := findAllDir(fswatcher.path)
@@ -66,7 +68,7 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 		}
 	}
 
-	<-done
+	<-fswatcher.done
 	return nil
 }
 
