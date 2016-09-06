@@ -9,11 +9,17 @@ import (
 	"github.com/spf13/viper"
 )
 
+var printVersion bool
 var cfgFile string
 var config *core.Config
 
 func _main(cmd *cobra.Command, args []string) {
-	core.NewTick(config).Run()
+	if printVersion {
+		fmt.Printf("tick version %s", __VERSION__)
+	} else {
+		core.NewTick(config).Run()
+	}
+
 }
 
 var RootCmd = &cobra.Command{
@@ -36,6 +42,7 @@ func init() {
 	RootCmd.Flags().StringVarP(&config.Path, "path", "p", "./", "path")
 	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell")
 	RootCmd.Flags().BoolVarP(&config.KillOnRestart, "kill-on-restart", "k", true, "kill on restart")
+	RootCmd.Flags().BoolVar(&printVersion, "version", false, "show version")
 }
 
 // initConfig reads in config file and ENV variables if set.
