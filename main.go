@@ -15,7 +15,7 @@ var config *core.Config
 
 func _main(cmd *cobra.Command, args []string) {
 	if printVersion {
-		fmt.Printf("tick version %s", __VERSION__)
+		fmt.Printf("tick version %s.%d", __VERSION__, __BUILD_NUM__)
 	} else {
 		core.NewTick(config).Run()
 	}
