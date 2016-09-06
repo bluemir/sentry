@@ -41,7 +41,6 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 func (fswatcher *fsWatcher) watch(callback func()) error {
 	// TODO
 	// * recursive listening
-	// * count delay
 	// * event filtering
 
 	var err error

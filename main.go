@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/bluemir/tick/core"
+	"github.com/bluemir/sentry/core"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -17,7 +17,7 @@ func _main(cmd *cobra.Command, args []string) {
 	if printVersion {
 		fmt.Printf("tick version %s.%d", __VERSION__, __BUILD_NUM__)
 	} else {
-		core.NewTick(config).Run()
+		core.NewSentry(config).Run()
 	}
 
 }

@@ -4,28 +4,28 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
-type Tick struct {
+type Sentry struct {
 	config  *Config
 	shell   *shellCommander
 	watcher *fsWatcher
 }
 
-func NewTick(config *Config) *Tick {
+func NewSentry(config *Config) *Sentry {
 	log.Debugf("path : %v", config)
 
-	return &Tick{
+	return &Sentry{
 		config:  config,
 		shell:   newShellCommander(config.Shell),
 		watcher: newFsWatcher(config.Path),
 	}
 }
 
-func (tick *Tick) Run() {
-	err := tick.watcher.watch(func() {
-		if tick.config.KillOnRestart {
-			tick.shell.stop()
+func (sentry *Sentry) Run() {
+	err := sentry.watcher.watch(func() {
+		if sentry.config.KillOnRestart {
+			sentry.shell.stop()
 		}
-		tick.shell.exec(tick.config.Command)
+		sentry.shell.exec(sentry.config.Command)
 	})
 	if err != nil {
 		log.Fatal(err)
