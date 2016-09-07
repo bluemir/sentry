@@ -11,7 +11,7 @@ type Sentry struct {
 }
 
 func NewSentry(config *Config) *Sentry {
-	log.Debugf("path : %v", config)
+	log.Debugf("config : %v", config)
 
 	return &Sentry{
 		config:  config,
