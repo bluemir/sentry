@@ -51,12 +51,11 @@ func init() {
 	RootCmd.PersistentFlags().BoolVar(&persistentConfig.printVersion, "version", false, "show version")
 
 	RootCmd.Flags().StringVarP(&config.Command, "command", "c", "", "command to run")
-	RootCmd.Flags().StringVarP(&config.Exclude, "exclude", "x", "", "exculde pattern(regexp)")
 	RootCmd.Flags().Int32VarP(&config.Delay, "delay", "d", 500, "delay that wait events")
 	RootCmd.Flags().StringSliceVarP(&config.WatchPaths, "watch", "w", []string{"./"}, "paths to watch")
+	RootCmd.Flags().StringSliceVarP(&config.Exclude, "exclude", "x", []string{}, "exclude pattern(See https://golang.org/pkg/path/filepath/#Match)")
 	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell to execute command")
 	RootCmd.Flags().BoolVarP(&config.KillOnRestart, "kill-on-restart", "k", true, "kill on restart")
-
 }
 
 // initConfig reads in config file and ENV variables if set.

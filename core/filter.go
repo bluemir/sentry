@@ -1,33 +1,30 @@
 package core
 
 import (
-	"regexp"
+	"path/filepath"
 
 	log "github.com/Sirupsen/logrus"
 )
 
 type fileNameFilter struct {
-	re *regexp.Regexp
+	patterns []string
 }
 
-func newFileNameFilter(pattern string) *fileNameFilter {
+func newFileNameFilter(pattern []string) *fileNameFilter {
 
-	if pattern == "" {
-		return &fileNameFilter{} // null filter
-	}
-
-	re, err := regexp.Compile(pattern)
-	if err != nil {
-		log.Warn("Fail to compile filter pattern")
-	}
 	return &fileNameFilter{
-		re,
+		patterns: pattern,
 	}
 }
 
 func (filter *fileNameFilter) check(path string) bool {
-	if filter.re == nil {
-		return false
+
+	for _, pattern := range filter.patterns {
+		if result, err := filepath.Match(pattern, path); err == nil && result {
+			return true
+		} else if err != nil {
+			log.Warnf("Bad pattern : %s", pattern)
+		}
 	}
-	return filter.re.MatchString(path)
+	return false
 }
