@@ -14,14 +14,16 @@ type fsWatcher struct {
 	watcher *fsnotify.Watcher
 	delayer *delayer
 	done    chan bool
+	filter  *fileNameFilter
 }
 
-func newFsWatcher(path string, delay int32) *fsWatcher {
+func newFsWatcher(config *Config) *fsWatcher {
 	return &fsWatcher{
-		path:    path,
+		path:    config.Path,
 		watcher: nil,
-		delayer: newDelayer(delay),
+		delayer: newDelayer(config.Delay),
 		done:    make(chan bool),
+		filter:  newFileNameFilter(config.Exclude),
 	}
 }
 
@@ -30,10 +32,14 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 		select {
 		case event := <-fswatcher.watcher.Events:
 			if event.Op == fsnotify.Chmod {
-				//macos bug?
+				//osx bug?
 				continue
 			}
 			log.Infof("event: %s", event)
+
+			if fswatcher.filter.check(event.Name) {
+				continue //skip exlude pattern
+			}
 
 			fswatcher.delayer.Do(callback)
 		case err := <-fswatcher.watcher.Errors:
@@ -60,8 +66,12 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	list = append(list, fswatcher.path)
 	for _, path := range list {
 		log.Infof("watching '%s'", path)
-		err = fswatcher.watcher.Add(path)
 
+		if fswatcher.filter.check(path) {
+			continue //skip exclude pattern
+		}
+
+		err = fswatcher.watcher.Add(path)
 		if err != nil {
 			log.Fatal(err)
 			return err

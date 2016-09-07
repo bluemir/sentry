@@ -16,7 +16,7 @@ func NewSentry(config *Config) *Sentry {
 	return &Sentry{
 		config:  config,
 		shell:   newShellCommander(config.Shell),
-		watcher: newFsWatcher(config.Path, config.Delay),
+		watcher: newFsWatcher(config),
 	}
 }
 

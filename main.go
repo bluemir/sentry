@@ -19,14 +19,17 @@ func _main(cmd *cobra.Command, args []string) {
 	} else {
 		core.NewSentry(config).Run()
 	}
-
 }
 
 var RootCmd = &cobra.Command{
-	Use:   "tick",
-	Short: "file system watcher",
-	Long:  `file System watcher for varius command`,
-	Run:   _main,
+	Use:   "sentry",
+	Short: "file system watcher and running command",
+	Long: `Sentry is command line tool that excute command when file is changed.
+Sentry watch file system event, and everytime you change/create on file it will re-excute command
+
+github : http://github.com/bluemir/sentry
+`,
+	Run: _main,
 }
 
 func init() {
@@ -37,10 +40,10 @@ func init() {
 	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tick.yaml)")
 
 	RootCmd.Flags().StringVarP(&config.Command, "command", "c", "", "command to run")
-	RootCmd.Flags().StringVarP(&config.Exclude, "exclude", "x", "", "exculde pattern regexp")
+	RootCmd.Flags().StringVarP(&config.Exclude, "exclude", "x", "", "exculde pattern(regexp)")
 	RootCmd.Flags().Int32VarP(&config.Delay, "delay", "d", 500, "delay that wait events")
 	RootCmd.Flags().StringVarP(&config.Path, "path", "p", "./", "path")
-	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell")
+	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell to excute command")
 	RootCmd.Flags().BoolVarP(&config.KillOnRestart, "kill-on-restart", "k", true, "kill on restart")
 	RootCmd.Flags().BoolVar(&printVersion, "version", false, "show version")
 }
@@ -51,9 +54,9 @@ func initConfig() {
 		viper.SetConfigFile(cfgFile)
 	}
 
-	viper.SetConfigName(".tick") // name of config file (without extension)
-	viper.AddConfigPath("$HOME") // adding home directory as first search path
-	viper.AutomaticEnv()         // read in environment variables that match
+	viper.SetConfigName(".sentry") // name of config file (without extension)
+	viper.AddConfigPath("$HOME")   // adding home directory as first search path
+	viper.AutomaticEnv()           // read in environment variables that match
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
