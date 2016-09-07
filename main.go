@@ -4,21 +4,30 @@ import (
 	"fmt"
 	"os"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/bluemir/sentry/core"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var printVersion bool
-var cfgFile string
+var persistentConfig struct {
+	printVersion bool
+	verbose      bool
+	cfgFile      string
+}
+
 var config *core.Config
 
 func _main(cmd *cobra.Command, args []string) {
-	if printVersion {
+	if persistentConfig.printVersion {
 		fmt.Printf("tick version %s.%d", __VERSION__, __BUILD_NUM__)
-	} else {
-		core.NewSentry(config).Run()
+		return
 	}
+	if persistentConfig.verbose {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	core.NewSentry(config).Run()
 }
 
 var RootCmd = &cobra.Command{
@@ -37,7 +46,9 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.tick.yaml)")
+	RootCmd.PersistentFlags().StringVar(&persistentConfig.cfgFile, "config", "", "config file (default is $HOME/.tick.yaml)")
+	RootCmd.PersistentFlags().BoolVarP(&persistentConfig.verbose, "verbose", "v", false, "show detail log")
+	RootCmd.PersistentFlags().BoolVar(&persistentConfig.printVersion, "version", false, "show version")
 
 	RootCmd.Flags().StringVarP(&config.Command, "command", "c", "", "command to run")
 	RootCmd.Flags().StringVarP(&config.Exclude, "exclude", "x", "", "exculde pattern(regexp)")
@@ -45,13 +56,13 @@ func init() {
 	RootCmd.Flags().StringSliceVarP(&config.WatchPaths, "watch", "w", []string{"./"}, "paths to watch")
 	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell to execute command")
 	RootCmd.Flags().BoolVarP(&config.KillOnRestart, "kill-on-restart", "k", true, "kill on restart")
-	RootCmd.Flags().BoolVar(&printVersion, "version", false, "show version")
+
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" { // enable ability to specify config file via flag
-		viper.SetConfigFile(cfgFile)
+	if persistentConfig.cfgFile != "" { // enable ability to specify config file via flag
+		viper.SetConfigFile(persistentConfig.cfgFile)
 	}
 
 	viper.SetConfigName(".sentry") // name of config file (without extension)
