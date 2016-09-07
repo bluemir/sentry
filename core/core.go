@@ -25,7 +25,7 @@ func (sentry *Sentry) Run() {
 		if sentry.config.KillOnRestart {
 			sentry.shell.stop()
 		}
-		log.Infof("excute command '%s'", sentry.config.Command)
+		log.Infof("execute command '%s'", sentry.config.Command)
 		sentry.shell.exec(sentry.config.Command)
 	})
 	if err != nil {

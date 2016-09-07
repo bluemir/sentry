@@ -24,8 +24,8 @@ func _main(cmd *cobra.Command, args []string) {
 var RootCmd = &cobra.Command{
 	Use:   "sentry",
 	Short: "file system watcher and running command",
-	Long: `Sentry is command line tool that excute command when file is changed.
-Sentry watch file system event, and everytime you change/create on file it will re-excute command
+	Long: `Sentry is command line tool that execute command when file is changed.
+Sentry watch file system event, and everytime you change/create on file it will re-execute command
 
 github : http://github.com/bluemir/sentry
 `,
@@ -43,7 +43,7 @@ func init() {
 	RootCmd.Flags().StringVarP(&config.Exclude, "exclude", "x", "", "exculde pattern(regexp)")
 	RootCmd.Flags().Int32VarP(&config.Delay, "delay", "d", 500, "delay that wait events")
 	RootCmd.Flags().StringSliceVarP(&config.WatchPaths, "watch", "w", []string{"./"}, "paths to watch")
-	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell to excute command")
+	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell to execute command")
 	RootCmd.Flags().BoolVarP(&config.KillOnRestart, "kill-on-restart", "k", true, "kill on restart")
 	RootCmd.Flags().BoolVar(&printVersion, "version", false, "show version")
 }
