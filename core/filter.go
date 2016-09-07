@@ -11,6 +11,11 @@ type fileNameFilter struct {
 }
 
 func newFileNameFilter(pattern string) *fileNameFilter {
+
+	if pattern == "" {
+		return &fileNameFilter{} // null filter
+	}
+
 	re, err := regexp.Compile(pattern)
 	if err != nil {
 		log.Warn("Fail to compile filter pattern")
@@ -22,7 +27,7 @@ func newFileNameFilter(pattern string) *fileNameFilter {
 
 func (filter *fileNameFilter) check(path string) bool {
 	if filter.re == nil {
-		return true
+		return false
 	}
 	return filter.re.MatchString(path)
 }

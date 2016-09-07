@@ -4,7 +4,7 @@ type Config struct {
 	Command       string
 	Exclude       string
 	Delay         int32
-	Path          string
+	WatchPaths    []string
 	Shell         string
 	KillOnRestart bool
 }

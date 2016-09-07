@@ -10,20 +10,20 @@ import (
 )
 
 type fsWatcher struct {
-	path    string
-	watcher *fsnotify.Watcher
-	delayer *delayer
-	done    chan bool
-	filter  *fileNameFilter
+	watchPaths []string
+	watcher    *fsnotify.Watcher
+	delayer    *delayer
+	done       chan bool
+	filter     *fileNameFilter
 }
 
 func newFsWatcher(config *Config) *fsWatcher {
 	return &fsWatcher{
-		path:    config.Path,
-		watcher: nil,
-		delayer: newDelayer(config.Delay),
-		done:    make(chan bool),
-		filter:  newFileNameFilter(config.Exclude),
+		watchPaths: config.WatchPaths,
+		watcher:    nil,
+		delayer:    newDelayer(config.Delay),
+		done:       make(chan bool),
+		filter:     newFileNameFilter(config.Exclude),
 	}
 }
 
@@ -62,8 +62,12 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	defer fswatcher.watcher.Close()
 	go fswatcher.handleEvent(callback)
 
-	list := findAllDir(fswatcher.path)
-	list = append(list, fswatcher.path)
+	list := append([]string{}, fswatcher.watchPaths...)
+
+	for _, path := range fswatcher.watchPaths {
+		list = append(list, findAllDir(path)...)
+	}
+
 	for _, path := range list {
 		log.Infof("watching '%s'", path)
 
