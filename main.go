@@ -20,7 +20,7 @@ var config *core.Config
 
 func _main(cmd *cobra.Command, args []string) {
 	if persistentConfig.printVersion {
-		fmt.Printf("tick version %s.%d", __VERSION__, __BUILD_NUM__)
+		fmt.Printf("sentry version %s-%d\n", __VERSION__, __BUILD_NUM__)
 		return
 	}
 	if persistentConfig.verbose {
