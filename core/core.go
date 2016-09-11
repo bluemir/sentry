@@ -21,6 +21,8 @@ func NewSentry(config *Config) *Sentry {
 }
 
 func (sentry *Sentry) Run() {
+	log.Infof("execute command '%s'", sentry.config.Command)
+	sentry.shell.exec(sentry.config.Command)
 	err := sentry.watcher.watch(func() {
 		if sentry.config.KillOnRestart {
 			sentry.shell.stop()

@@ -51,7 +51,7 @@ func init() {
 	RootCmd.PersistentFlags().BoolVar(&persistentConfig.printVersion, "version", false, "show version")
 
 	RootCmd.Flags().StringVarP(&config.Command, "command", "c", "", "command to run")
-	RootCmd.Flags().Int32VarP(&config.Delay, "delay", "d", 500, "delay that wait events")
+	RootCmd.Flags().Int32VarP(&config.Delay, "delay", "d", 500, "delay that wait events(ms)")
 	RootCmd.Flags().StringSliceVarP(&config.WatchPaths, "watch", "w", []string{"./"}, "paths to watch")
 	RootCmd.Flags().StringSliceVarP(&config.Exclude, "exclude", "x", []string{}, "exclude pattern(See https://golang.org/pkg/path/filepath/#Match)")
 	RootCmd.Flags().StringVarP(&config.Shell, "shell", "s", os.Getenv("SHELL"), "shell to execute command")
