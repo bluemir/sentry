@@ -89,6 +89,10 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 func findAllDir(path string) []string {
 	list := []string{}
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			log.Warn(err)
+			return nil //continue
+		}
 		if info.IsDir() && !strings.HasPrefix(path, ".") {
 			list = append(list, path)
 		}

@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"syscall"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -20,6 +21,9 @@ func newShellCommander(shell string) *shellCommander {
 
 func (c *shellCommander) exec(command string) {
 	cmd := exec.Command(c.shell, "-c", command)
+
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+
 	//cmd.Stdin = strings.NewReader("some input")
 
 	link(log.Info, cmd.StdoutPipe)
@@ -35,17 +39,22 @@ func (c *shellCommander) stop() {
 	if c.proc == nil {
 		return
 	}
-	log.Infof("kill process")
-	err := c.proc.Kill()
+	log.Infof("try to kill process...")
+	pgid, err := syscall.Getpgid(c.proc.Pid)
 	if err != nil {
 		log.Warnln(err)
+		return
+	}
+	if err := syscall.Kill(-pgid, syscall.SIGKILL); err != nil {
+		log.Warnln(err)
+		return
 	}
 
-	c = nil
+	log.Warn("kill process : ", c.proc.Pid)
+	c.proc = nil
 }
 
 func link(out func(...interface{}), in func() (io.ReadCloser, error)) {
-
 	reader, err := in()
 	if err != nil {
 		log.Warn(err)
