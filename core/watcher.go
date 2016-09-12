@@ -69,7 +69,6 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	log.Debug(list)
 
 	for _, path := range list {
-		log.Infof("watching '%s'", path)
 
 		if fswatcher.filter.check(path) {
 			continue //skip exclude pattern
@@ -80,6 +79,7 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 			log.Fatal(err)
 			return err
 		}
+		log.Infof("watching '%s'", path)
 	}
 
 	<-fswatcher.done
