@@ -1,3 +1,5 @@
+install: update-build-number
+	go install .
 build: update-build-number
 	go build -o tmp/build/sentry .
 update-build-number:

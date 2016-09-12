@@ -63,10 +63,10 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	go fswatcher.handleEvent(callback)
 
 	list := append([]string{}, fswatcher.watchPaths...)
-
-	for _, path := range fswatcher.watchPaths {
-		list = append(list, findAllDir(path)...)
-	}
+	list = expand(list, expandPath)
+	log.Debug(list)
+	list = expand(list, findAllDir)
+	log.Debug(list)
 
 	for _, path := range list {
 		log.Infof("watching '%s'", path)
@@ -86,6 +86,23 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	return nil
 }
 
+func expand(seed []string, expandFunc func(string) []string) []string {
+	result := []string{}
+	for _, str := range seed {
+		result = append(result, expandFunc(str)...)
+	}
+	return result
+}
+
+func expandPath(path string) []string {
+	matches, err := filepath.Glob(path)
+	if err != nil {
+		log.Warn(err)
+		return []string{}
+	}
+	return matches
+}
+
 func findAllDir(path string) []string {
 	list := []string{}
 	filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
@@ -93,7 +110,7 @@ func findAllDir(path string) []string {
 			log.Warn(err)
 			return nil //continue
 		}
-		if info.IsDir() && !strings.HasPrefix(path, ".") {
+		if !strings.HasPrefix(path, ".") {
 			list = append(list, path)
 		}
 
