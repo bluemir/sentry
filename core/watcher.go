@@ -3,6 +3,7 @@ package core
 import (
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -21,11 +22,12 @@ func newFsWatcher(config *Config) *fsWatcher {
 
 	filter := newFileNameFilter(config.Exclude)
 
-	watchedFileList := paths.New(config.WatchPaths).
+	watchedFileList := paths.New(config.WatchPaths...).
 		Glob().
 		Expand(findAllDir).
 		Filter(filter.check).
 		Value()
+	sort.Strings(watchedFileList)
 
 	return &fsWatcher{
 		watchPaths: watchedFileList,

@@ -5,3 +5,5 @@ build: update-build-number
 update-build-number:
 	@echo updating version.go
 	@perl -pi -e 's{__BUILD_NUM__ = (\d+)}{$$n=$$1+1; "__BUILD_NUM__ = $$n"}e' version.go
+test: update-build-number
+	go test ./...

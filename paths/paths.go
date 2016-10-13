@@ -7,7 +7,7 @@ import (
 
 type Paths map[string]bool
 
-func New(strs []string) Paths {
+func New(strs ...string) Paths {
 
 	result := Paths{}
 	for _, str := range strs {
@@ -19,7 +19,8 @@ func New(strs []string) Paths {
 func (paths Paths) Glob() Paths {
 	return paths.Expand(func(p string) []string {
 		if result, err := filepath.Glob(p); err != nil {
-			panic(err)
+			log.Warn(err)
+			return []string{p}
 		} else {
 			return result
 		}

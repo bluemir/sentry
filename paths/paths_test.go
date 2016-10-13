@@ -25,9 +25,9 @@ func TestGlob(t *testing.T) {
 	}
 
 	for _, tt := range globtest {
-		result := New(tt.in).Glob()
+		result := New(tt.in...).Glob()
 
-		assert.Equal(t, result, New(tt.out))
+		assert.Equal(t, result, New(tt.out...))
 	}
 }
 func TestExpand(t *testing.T) {
@@ -50,9 +50,9 @@ func TestExpand(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Expand(tt.in)
+		result := New([]string{"a", "b", "c", "d"}...).Expand(tt.in)
 
-		assert.Equal(t, result, New(tt.out))
+		assert.Equal(t, result, New(tt.out...))
 	}
 }
 func TestFilter(t *testing.T) {
@@ -75,9 +75,9 @@ func TestFilter(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Filter(tt.in)
+		result := New([]string{"a", "b", "c", "d"}...).Filter(tt.in)
 
-		assert.Equal(t, result, New(tt.out))
+		assert.Equal(t, result, New(tt.out...))
 	}
 }
 func TestMap(t *testing.T) {
@@ -100,9 +100,9 @@ func TestMap(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Map(tt.in)
+		result := New([]string{"a", "b", "c", "d"}...).Map(tt.in)
 
-		assert.Equal(t, result, New(tt.out))
+		assert.Equal(t, result, New(tt.out...))
 	}
 }
 
@@ -117,7 +117,7 @@ func TestValue(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		result := New(tt.in).Value()
+		result := New(tt.in...).Value()
 
 		for _, str := range tt.out {
 			assert.Contains(t, result, str)
