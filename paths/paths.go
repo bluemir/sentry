@@ -47,3 +47,7 @@ func (paths Paths) Map(mapper func(string) string) Paths {
 	log.Debug(result)
 	return result
 }
+
+func (paths Paths) Value() []string {
+	return paths
+}

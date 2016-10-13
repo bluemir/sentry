@@ -24,7 +24,8 @@ func newFsWatcher(config *Config) *fsWatcher {
 	watchedFileList := paths.New(config.WatchPaths).
 		Glob().
 		Expand(findAllDir).
-		Filter(filter.check)
+		Filter(filter.check).
+		Value()
 
 	return &fsWatcher{
 		watchPaths: watchedFileList,
@@ -81,6 +82,7 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	<-fswatcher.done
 	return nil
 }
+
 func (fswatcher *fsWatcher) close() {
 	fswatcher.done <- true
 }

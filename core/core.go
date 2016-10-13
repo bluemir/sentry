@@ -15,7 +15,7 @@ type Sentry struct {
 }
 
 func NewSentry(config *Config) *Sentry {
-	log.Debugf("config : %v", config)
+	log.Debugf("config : %+v", config)
 
 	return &Sentry{
 		config:  config,
@@ -28,7 +28,7 @@ func NewSentry(config *Config) *Sentry {
 func (sentry *Sentry) Run() {
 	sentry.registerSignal()
 
-	log.Infof("execute command '%s'", sentry.config.Command)
+	log.Infof("Execute command '%s'", sentry.config.Command)
 	sentry.shell.exec(sentry.config.Command)
 
 	err := sentry.watcher.watch(func() {
@@ -58,6 +58,6 @@ func (sentry *Sentry) restartCommand() {
 	if sentry.config.KillOnRestart {
 		sentry.shell.stop()
 	}
-	log.Infof("execute command '%s'", sentry.config.Command)
+	log.Infof("Execute command '%s'", sentry.config.Command)
 	sentry.shell.exec(sentry.config.Command)
 }

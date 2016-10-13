@@ -25,7 +25,7 @@ func TestGlob(t *testing.T) {
 	}
 
 	for _, tt := range globtest {
-		result := New(tt.in).Glob()
+		result := New(tt.in).Glob().Value()
 
 		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", tt.out) {
 			t.Errorf("glob(%q) => %q, want %q", tt.in, result, tt.out)
@@ -52,7 +52,7 @@ func TestExpand(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Expand(tt.in)
+		result := New([]string{"a", "b", "c", "d"}).Expand(tt.in).Value()
 
 		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", tt.out) {
 			t.Errorf("expand(%q) => %q, want %q", tt.in, result, tt.out)
@@ -79,7 +79,7 @@ func TestFilter(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Filter(tt.in)
+		result := New([]string{"a", "b", "c", "d"}).Filter(tt.in).Value()
 
 		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", tt.out) {
 			t.Errorf("filter(%q) => %q, want %q", tt.in, result, tt.out)
@@ -106,7 +106,7 @@ func TestMap(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Map(tt.in)
+		result := New([]string{"a", "b", "c", "d"}).Map(tt.in).Value()
 
 		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", tt.out) {
 			t.Errorf("Map(%q) => %q, want %q", tt.in, result, tt.out)
