@@ -12,7 +12,6 @@ import (
 type fsWatcher struct {
 	watchPaths []string
 	watcher    *fsnotify.Watcher
-	delayer    *delayer
 	done       chan bool
 	filter     *fileNameFilter
 }
@@ -21,7 +20,6 @@ func newFsWatcher(config *Config) *fsWatcher {
 	return &fsWatcher{
 		watchPaths: config.WatchPaths,
 		watcher:    nil,
-		delayer:    newDelayer(config.Delay),
 		done:       make(chan bool),
 		filter:     newFileNameFilter(config.Exclude),
 	}
@@ -41,7 +39,9 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 				continue //skip exlude pattern
 			}
 
-			fswatcher.delayer.Do(callback)
+			//if dir will add wather
+
+			callback()
 		case err := <-fswatcher.watcher.Errors:
 			log.Debugln("error:", err)
 		}
@@ -67,13 +67,10 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	log.Debug(list)
 	list = expand(list, findAllDir)
 	log.Debug(list)
+	list = filter(list, fswatcher.filter.check)
+	log.Debug(list)
 
 	for _, path := range list {
-
-		if fswatcher.filter.check(path) {
-			continue //skip exclude pattern
-		}
-
 		err = fswatcher.watcher.Add(path)
 		if err != nil {
 			log.Fatal(err)
@@ -85,11 +82,24 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	<-fswatcher.done
 	return nil
 }
+func (fswatcher *fsWatcher) close() {
+	fswatcher.done <- true
+}
 
 func expand(seed []string, expandFunc func(string) []string) []string {
 	result := []string{}
 	for _, str := range seed {
 		result = append(result, expandFunc(str)...)
+	}
+	return result
+}
+
+func filter(seed []string, filterFunc func(string) bool) []string {
+	result := []string{}
+	for _, str := range seed {
+		if filterFunc(str) {
+			result = append(result, str)
+		}
 	}
 	return result
 }

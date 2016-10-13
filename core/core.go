@@ -11,6 +11,7 @@ type Sentry struct {
 	config  *Config
 	shell   *shellCommander
 	watcher *fsWatcher
+	delay   *delayer
 }
 
 func NewSentry(config *Config) *Sentry {
@@ -20,21 +21,18 @@ func NewSentry(config *Config) *Sentry {
 		config:  config,
 		shell:   newShellCommander(config.Shell),
 		watcher: newFsWatcher(config),
+		delay:   newDelayer(config.Delay),
 	}
 }
 
 func (sentry *Sentry) Run() {
+	sentry.registerSignal()
+
 	log.Infof("execute command '%s'", sentry.config.Command)
 	sentry.shell.exec(sentry.config.Command)
 
-	sentry.registerSignal()
-
 	err := sentry.watcher.watch(func() {
-		if sentry.config.KillOnRestart {
-			sentry.shell.stop()
-		}
-		log.Infof("execute command '%s'", sentry.config.Command)
-		sentry.shell.exec(sentry.config.Command)
+		sentry.delay.Do(sentry.restartCommand)
 	})
 	if err != nil {
 		log.Fatal(err)
@@ -50,7 +48,16 @@ func (sentry *Sentry) registerSignal() {
 			log.Warnf("recive %v", sig)
 			sentry.shell.stop()
 			log.Info("Exiting....")
+			sentry.watcher.close()
 			os.Exit(0)
 		}
 	}()
+}
+
+func (sentry *Sentry) restartCommand() {
+	if sentry.config.KillOnRestart {
+		sentry.shell.stop()
+	}
+	log.Infof("execute command '%s'", sentry.config.Command)
+	sentry.shell.exec(sentry.config.Command)
 }
