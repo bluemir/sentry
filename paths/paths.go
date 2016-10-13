@@ -5,10 +5,15 @@ import (
 	"path/filepath"
 )
 
-type Paths []string
+type Paths map[string]bool
 
 func New(strs []string) Paths {
-	return Paths(strs)
+
+	result := Paths{}
+	for _, str := range strs {
+		result[str] = true
+	}
+	return result
 }
 
 func (paths Paths) Glob() Paths {
@@ -22,32 +27,41 @@ func (paths Paths) Glob() Paths {
 
 }
 func (paths Paths) Expand(expander func(string) []string) Paths {
-	var result []string
-	for _, str := range paths {
-		result = append(result, expander(str)...)
+	result := Paths{}
+	for str, _ := range paths {
+		e := expander(str)
+		for _, s := range e {
+			result[s] = true
+		}
 	}
 	log.Debug(result)
 	return result
 }
 func (paths Paths) Filter(filter func(string) bool) Paths {
-	var result []string
-	for _, str := range paths {
+	result := Paths{}
+	for str, _ := range paths {
 		if filter(str) {
-			result = append(result, str)
+			result[str] = true
 		}
 	}
 	log.Debug(result)
 	return result
 }
 func (paths Paths) Map(mapper func(string) string) Paths {
-	result := make([]string, len(paths))
-	for k, str := range paths {
-		result[k] = mapper(str)
+	result := Paths{}
+	for str, _ := range paths {
+		result[mapper(str)] = true
 	}
 	log.Debug(result)
 	return result
 }
 
 func (paths Paths) Value() []string {
-	return paths
+	var result []string
+
+	for str, _ := range paths {
+		result = append(result, str)
+	}
+
+	return result
 }

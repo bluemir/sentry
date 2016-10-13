@@ -1,7 +1,7 @@
 package paths
 
 import (
-	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -25,11 +25,9 @@ func TestGlob(t *testing.T) {
 	}
 
 	for _, tt := range globtest {
-		result := New(tt.in).Glob().Value()
+		result := New(tt.in).Glob()
 
-		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", tt.out) {
-			t.Errorf("glob(%q) => %q, want %q", tt.in, result, tt.out)
-		}
+		assert.Equal(t, result, New(tt.out))
 	}
 }
 func TestExpand(t *testing.T) {
@@ -47,16 +45,14 @@ func TestExpand(t *testing.T) {
 			func(str string) []string {
 				return []string{str, str}
 			},
-			[]string{"a", "a", "b", "b", "c", "c", "d", "d"},
+			[]string{"a", "b", "c", "d"},
 		},
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Expand(tt.in).Value()
+		result := New([]string{"a", "b", "c", "d"}).Expand(tt.in)
 
-		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", tt.out) {
-			t.Errorf("expand(%q) => %q, want %q", tt.in, result, tt.out)
-		}
+		assert.Equal(t, result, New(tt.out))
 	}
 }
 func TestFilter(t *testing.T) {
@@ -79,11 +75,9 @@ func TestFilter(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Filter(tt.in).Value()
+		result := New([]string{"a", "b", "c", "d"}).Filter(tt.in)
 
-		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", tt.out) {
-			t.Errorf("filter(%q) => %q, want %q", tt.in, result, tt.out)
-		}
+		assert.Equal(t, result, New(tt.out))
 	}
 }
 func TestMap(t *testing.T) {
@@ -106,10 +100,8 @@ func TestMap(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		result := New([]string{"a", "b", "c", "d"}).Map(tt.in).Value()
+		result := New([]string{"a", "b", "c", "d"}).Map(tt.in)
 
-		if fmt.Sprintf("%v", result) != fmt.Sprintf("%v", tt.out) {
-			t.Errorf("Map(%q) => %q, want %q", tt.in, result, tt.out)
-		}
+		assert.Equal(t, result, New(tt.out))
 	}
 }
