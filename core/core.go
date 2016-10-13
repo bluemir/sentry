@@ -45,7 +45,7 @@ func (sentry *Sentry) registerSignal() {
 	go func() {
 		for sig := range c {
 			// sig is a ^C, handle it
-			log.Warnf("recive %v", sig)
+			log.Warnf("Receive Signal : %v", sig)
 			sentry.shell.stop()
 			log.Info("Exiting....")
 			sentry.watcher.close()

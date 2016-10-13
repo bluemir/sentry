@@ -21,10 +21,10 @@ func (filter *fileNameFilter) check(path string) bool {
 
 	for _, pattern := range filter.patterns {
 		if result, err := filepath.Match(pattern, path); err == nil && result {
-			return true
+			return false
 		} else if err != nil {
 			log.Warnf("Bad pattern : %s", pattern)
 		}
 	}
-	return false
+	return true
 }

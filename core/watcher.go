@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
+	"github.com/bluemir/sentry/paths"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -17,11 +18,19 @@ type fsWatcher struct {
 }
 
 func newFsWatcher(config *Config) *fsWatcher {
+
+	filter := newFileNameFilter(config.Exclude)
+
+	watchedFileList := paths.New(config.WatchPaths).
+		Glob().
+		Expand(findAllDir).
+		Filter(filter.check)
+
 	return &fsWatcher{
-		watchPaths: config.WatchPaths,
+		watchPaths: watchedFileList,
 		watcher:    nil,
 		done:       make(chan bool),
-		filter:     newFileNameFilter(config.Exclude),
+		filter:     filter,
 	}
 }
 
@@ -35,7 +44,7 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 			}
 			log.Infof("event: %s", event)
 
-			if fswatcher.filter.check(event.Name) {
+			if !fswatcher.filter.check(event.Name) {
 				continue //skip exlude pattern
 			}
 
@@ -49,9 +58,6 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 }
 
 func (fswatcher *fsWatcher) watch(callback func()) error {
-	// TODO
-	// * recursive listening
-	// * event filtering
 
 	var err error
 	fswatcher.watcher, err = fsnotify.NewWatcher()
@@ -60,17 +66,8 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 		return err
 	}
 	defer fswatcher.watcher.Close()
-	go fswatcher.handleEvent(callback)
 
-	list := append([]string{}, fswatcher.watchPaths...)
-	list = expand(list, expandPath)
-	log.Debug(list)
-	list = expand(list, findAllDir)
-	log.Debug(list)
-	list = filter(list, fswatcher.filter.check)
-	log.Debug(list)
-
-	for _, path := range list {
+	for _, path := range fswatcher.watchPaths {
 		err = fswatcher.watcher.Add(path)
 		if err != nil {
 			log.Fatal(err)
@@ -79,38 +76,13 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 		log.Infof("watching '%s'", path)
 	}
 
+	go fswatcher.handleEvent(callback)
+
 	<-fswatcher.done
 	return nil
 }
 func (fswatcher *fsWatcher) close() {
 	fswatcher.done <- true
-}
-
-func expand(seed []string, expandFunc func(string) []string) []string {
-	result := []string{}
-	for _, str := range seed {
-		result = append(result, expandFunc(str)...)
-	}
-	return result
-}
-
-func filter(seed []string, filterFunc func(string) bool) []string {
-	result := []string{}
-	for _, str := range seed {
-		if filterFunc(str) {
-			result = append(result, str)
-		}
-	}
-	return result
-}
-
-func expandPath(path string) []string {
-	matches, err := filepath.Glob(path)
-	if err != nil {
-		log.Warn(err)
-		return []string{}
-	}
-	return matches
 }
 
 func findAllDir(path string) []string {
