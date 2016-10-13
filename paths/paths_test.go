@@ -105,3 +105,22 @@ func TestMap(t *testing.T) {
 		assert.Equal(t, result, New(tt.out))
 	}
 }
+
+func TestValue(t *testing.T) {
+	var tests = []struct {
+		in  []string
+		out []string
+	}{
+		{
+			[]string{"a", "b", "c", "d"},
+			[]string{"a", "b", "c", "d"},
+		},
+	}
+	for _, tt := range tests {
+		result := New(tt.in).Value()
+
+		for _, str := range tt.out {
+			assert.Contains(t, result, str)
+		}
+	}
+}
