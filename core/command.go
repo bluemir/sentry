@@ -39,7 +39,7 @@ func (c *shellCommander) stop() {
 	if c.proc == nil {
 		return
 	}
-	log.Infof("try to kill process...")
+	log.Infof("Try to kill process...")
 	pgid, err := syscall.Getpgid(c.proc.Pid)
 	if err != nil {
 		log.Warnln(err)
@@ -50,7 +50,7 @@ func (c *shellCommander) stop() {
 		return
 	}
 
-	log.Warn("kill process : ", c.proc.Pid)
+	log.Warnf("Process killed. PID: %d", c.proc.Pid)
 	c.proc = nil
 }
 
@@ -65,11 +65,11 @@ func link(out func(...interface{}), in func() (io.ReadCloser, error)) {
 		for {
 			line, _, err := r.ReadLine()
 			if err != nil {
-				log.Debugln("[end of stdout]")
+				log.Debugln("End of stream")
 				return
 			}
 			out(string(line))
 		}
-		log.Debugln("process read line terminated")
+		log.Debugln("Process read line terminated")
 	}()
 }

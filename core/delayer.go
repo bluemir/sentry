@@ -31,13 +31,13 @@ func (this *delayer) handleEvent() {
 		case <-this.timer.C:
 			// do function
 			if callback != nil {
-				log.Debug("runnging callback...")
+				log.Debug("Runnging callback...")
 				callback()
 			} else {
-				log.Debug("callback is nil")
+				log.Debug("Callback is nil")
 			}
 		case cb := <-this.event:
-			log.Debug("new callback")
+			log.Debug("New event arrived")
 			//register callback
 			callback = cb
 			//reset timer
@@ -52,6 +52,6 @@ func (this *delayer) resetTimer() {
 	this.timer.Reset(this.delay)
 }
 func (this *delayer) Do(callback func()) {
-	log.Infof("wating %s...", this.delay.String())
+	log.Infof("Wating %s...", this.delay.String())
 	this.event <- callback
 }

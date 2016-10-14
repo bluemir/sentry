@@ -74,11 +74,17 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 
 	go fswatcher.handleEvent(callback)
 
+	callback() // do first command
+
 	<-fswatcher.done
 	return nil
 }
 
 func (fw *fsWatcher) appendFile(path string) {
+	if fw.watchPaths[path] {
+		return // already exist
+	}
+
 	if err := fw.watcher.Add(path); err != nil {
 		log.Fatal(err)
 	} else {
