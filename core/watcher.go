@@ -7,34 +7,27 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/bluemir/sentry/paths"
+	"github.com/bluemir/sentry/utils"
 	"github.com/fsnotify/fsnotify"
 )
 
 type fsWatcher struct {
-	watchPaths []string
+	config     *Config
+	watchPaths map[string]bool
 	watcher    *fsnotify.Watcher
 	done       chan bool
-	filter     *fileNameFilter
 }
 
 func newFsWatcher(config *Config) *fsWatcher {
 
-	filter := newFileNameFilter(config.Exclude)
-
-	watchedFileList := paths.New(config.WatchPaths...).
-		Glob().
-		Expand(findAllDir).
-		Filter(filter.check).
-		Value()
-	sort.Strings(watchedFileList)
-
-	return &fsWatcher{
-		watchPaths: watchedFileList,
+	fw := &fsWatcher{
+		config:     config,
+		watchPaths: map[string]bool{},
 		watcher:    nil,
 		done:       make(chan bool),
-		filter:     filter,
 	}
+
+	return fw
 }
 
 func (fswatcher *fsWatcher) handleEvent(callback func()) {
@@ -47,7 +40,7 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 			}
 			log.Infof("event: %s", event)
 
-			if !fswatcher.filter.check(event.Name) {
+			if notMatch(fswatcher.config.Exclude)(event.Name) {
 				continue //skip exlude pattern
 			}
 
@@ -61,7 +54,6 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 }
 
 func (fswatcher *fsWatcher) watch(callback func()) error {
-
 	var err error
 	fswatcher.watcher, err = fsnotify.NewWatcher()
 	if err != nil {
@@ -70,19 +62,29 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	}
 	defer fswatcher.watcher.Close()
 
-	for _, path := range fswatcher.watchPaths {
-		err = fswatcher.watcher.Add(path)
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
-		log.Infof("watching '%s'", path)
+	list := utils.NewStrings(fswatcher.config.WatchPaths...).
+		Expand(glob).
+		Expand(findAllDir).
+		Filter(notMatch(fswatcher.config.Exclude))
+	sort.Strings(list)
+
+	for _, path := range list {
+		fswatcher.appendFile(path)
 	}
 
 	go fswatcher.handleEvent(callback)
 
 	<-fswatcher.done
 	return nil
+}
+
+func (fw *fsWatcher) appendFile(path string) {
+	if err := fw.watcher.Add(path); err != nil {
+		log.Fatal(err)
+	} else {
+		fw.watchPaths[path] = true
+		log.Infof("watching '%s'", path)
+	}
 }
 
 func (fswatcher *fsWatcher) close() {
@@ -96,6 +98,7 @@ func findAllDir(path string) []string {
 			log.Warn(err)
 			return nil //continue
 		}
+
 		if !strings.HasPrefix(path, ".") {
 			list = append(list, path)
 		}
@@ -103,4 +106,26 @@ func findAllDir(path string) []string {
 		return nil
 	})
 	return list
+}
+func glob(path string) []string {
+	result, err := filepath.Glob(path)
+	if err != nil {
+		log.Warn(err)
+		return []string{path}
+	}
+
+	return result
+}
+func notMatch(patterns []string) func(string) bool {
+	return func(path string) bool {
+		for _, pattern := range patterns {
+			log.Debugf("pattern: %s, path: %s", pattern, path)
+			if ok, err := filepath.Match(pattern, path); err != nil {
+				log.Warn(err)
+			} else if ok {
+				return false
+			}
+		}
+		return true
+	}
 }
