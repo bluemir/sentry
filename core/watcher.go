@@ -8,6 +8,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 	"github.com/bluemir/sentry/utils"
+	"github.com/bmatcuk/doublestar"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -115,7 +116,7 @@ func findAllDir(path string) []string {
 	return list
 }
 func glob(path string) []string {
-	result, err := filepath.Glob(path)
+	result, err := doublestar.Glob(path)
 	if err != nil {
 		log.Warn(err)
 		return []string{path}
@@ -127,7 +128,7 @@ func notMatch(patterns []string) func(string) bool {
 	return func(path string) bool {
 		for _, pattern := range patterns {
 			log.Debugf("pattern: %s, path: %s", pattern, path)
-			if ok, err := filepath.Match(pattern, path); err != nil {
+			if ok, err := doublestar.PathMatch(pattern, path); err != nil {
 				log.Warn(err)
 			} else if ok {
 				return false
