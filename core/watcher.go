@@ -38,9 +38,10 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 				//osx bug?
 				continue
 			}
-			log.Infof("event: %s", event)
+			log.Infof("Event: %s", event)
 
-			if notMatch(fswatcher.config.Exclude)(event.Name) {
+			if !notMatch(fswatcher.config.Exclude)(event.Name) {
+				log.Info("Skip... Matching with exclude pattern")
 				continue //skip exlude pattern
 			}
 
