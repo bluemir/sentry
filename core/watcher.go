@@ -41,12 +41,16 @@ func (fswatcher *fsWatcher) handleEvent(callback func()) {
 			}
 			log.Infof("Event: %s", event)
 
-			if !notMatch(fswatcher.config.Exclude)(event.Name) {
+			if match(fswatcher.config.Exclude)(event.Name) {
 				log.Info("Skip... Matching with exclude pattern")
 				continue //skip exlude pattern
 			}
-
 			//if dir will add wather
+			if info, err := os.Stat(event.Name); err != nil {
+				log.Warn(err)
+			} else if match(fswatcher.config.WatchPaths)(event.Name) || info.IsDir() {
+				fswatcher.appendFile(event.Name)
+			}
 
 			callback()
 		case err := <-fswatcher.watcher.Errors:
@@ -67,7 +71,7 @@ func (fswatcher *fsWatcher) watch(callback func()) error {
 	list := utils.NewStrings(fswatcher.config.WatchPaths...).
 		Expand(glob).
 		Expand(findAllDir).
-		Filter(notMatch(fswatcher.config.Exclude))
+		Filter(not(match(fswatcher.config.Exclude)))
 	sort.Strings(list)
 
 	for _, path := range list {
@@ -107,10 +111,14 @@ func findAllDir(path string) []string {
 			return nil //continue
 		}
 
-		if !strings.HasPrefix(path, ".") {
-			list = append(list, path)
+		if strings.HasPrefix(info.Name(), ".") {
+			return nil //continue
 		}
 
+		if match([]string{"**/.*/**"})(path) {
+			return nil //continue
+		}
+		list = append(list, path)
 		return nil
 	})
 	return list
@@ -124,16 +132,21 @@ func glob(path string) []string {
 
 	return result
 }
-func notMatch(patterns []string) func(string) bool {
+func match(patterns []string) func(string) bool {
 	return func(path string) bool {
 		for _, pattern := range patterns {
 			log.Debugf("pattern: %s, path: %s", pattern, path)
 			if ok, err := doublestar.PathMatch(pattern, path); err != nil {
 				log.Warn(err)
 			} else if ok {
-				return false
+				return true
 			}
 		}
-		return true
+		return false
+	}
+}
+func not(f func(string) bool) func(string) bool {
+	return func(p string) bool {
+		return !f(p)
 	}
 }
