@@ -56,5 +56,5 @@ func (sentry *Sentry) restartCommand() {
 		sentry.shell.stop()
 	}
 	log.Infof("Execute command '%s'", sentry.config.Command)
-	sentry.shell.exec(sentry.config.Command)
+	go sentry.shell.exec(sentry.config.Command)
 }
