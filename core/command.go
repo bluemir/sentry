@@ -1,8 +1,6 @@
 package core
 
 import (
-	"bufio"
-	"io"
 	"os"
 	"os/exec"
 	"syscall"
@@ -26,8 +24,8 @@ func (c *shellCommander) exec(command string) {
 
 	//cmd.Stdin = strings.NewReader("some input")
 
-	link(log.Info, cmd.StdoutPipe)
-	link(log.Warn, cmd.StderrPipe)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	err := cmd.Start()
 	if err != nil {
@@ -52,24 +50,4 @@ func (c *shellCommander) stop() {
 
 	log.Warnf("Process killed. PID: %d", c.proc.Pid)
 	c.proc = nil
-}
-
-func link(out func(...interface{}), in func() (io.ReadCloser, error)) {
-	reader, err := in()
-	if err != nil {
-		log.Warn(err)
-	}
-	go func() {
-
-		r := bufio.NewReader(reader)
-		for {
-			line, _, err := r.ReadLine()
-			if err != nil {
-				log.Debugln("End of stream")
-				return
-			}
-			out(string(line))
-		}
-		log.Debugln("Process read line terminated")
-	}()
 }
