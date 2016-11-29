@@ -37,7 +37,7 @@ func (this *delayer) handleEvent() {
 				log.Debug("Callback is nil")
 			}
 		case cb := <-this.event:
-			log.Debug("New event arrived")
+			log.Debugf("New event arrived. Wating %s...", this.delay.String())
 			//register callback
 			callback = cb
 			//reset timer
@@ -52,6 +52,5 @@ func (this *delayer) resetTimer() {
 	this.timer.Reset(this.delay)
 }
 func (this *delayer) Do(callback func()) {
-	log.Infof("Wating %s...", this.delay.String())
 	this.event <- callback
 }
