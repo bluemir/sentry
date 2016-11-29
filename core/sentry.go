@@ -15,6 +15,7 @@ type Sentry struct {
 }
 
 func NewSentry(config *Config) *Sentry {
+	log.SetFormatter(NewSentryFormatter())
 	log.Debugf("config : %+v", config)
 
 	return &Sentry{
